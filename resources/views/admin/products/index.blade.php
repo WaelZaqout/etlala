@@ -9,10 +9,9 @@
     <div class="header">
         <div class="search-bar mb-3">
             <input id="searchByName" type="text" placeholder="الاسم" class="form-control" value="{{ $q ?? '' }}">
-
         </div>
 
-        <a href="{{ route('products.create') }}" class="add-button">
+        <a href="#" class="add-button">
             <i class="fas fa-plus"></i> إضافة منتج
         </a>
     </div>
@@ -35,12 +34,11 @@
             <tbody id="categoriesTbody">
                 @include('admin.products._rows', ['products' => $products])
             </tbody>
-
-            <div id="categoriesPagination" class="mt-3">
-                {{-- {{ $products->links() }} --}}
-            </div>
-
         </table>
+
+        <div id="categoriesPagination" class="mt-3">
+            @include('admin.products._pagination', ['products' => $products])
+        </div>
     </div>
 
 </div>
@@ -76,37 +74,39 @@
             modalTitle.textContent = 'تعديل المنتج';
             currentProductId = data.id;
 
-            // تعبئة الحقول
             nameInput.value = data.name || '';
             descInput.value = data.description || '';
             categorySelect.value = data.category_id || '';
-            document.getElementById('price').value = data.price || 0;
-            document.getElementById('sale_price').value = data.sale_price || 0;
-            document.getElementById('stock').value = data.stock || 0;
+            const priceInput = document.getElementById('price');
+            if (priceInput) priceInput.value = data.price || 0;
+            // const salePriceInput = document.getElementById('sale_price');
+            // if (salePriceInput) salePriceInput.value = data.sale_price || 0;
+            // const stockInput = document.getElementById('stock');
+            // if (stockInput) stockInput.value = data.stock || 0;
 
-            // صورة
             if (imagePreview) {
                 imagePreview.src = data.image ? `/storage/${data.image}` : '';
                 imagePreview.style.display = data.image ? 'block' : 'none';
             }
 
-            // إعداد الفورم للتحديث
-            categoryForm.action = data.updateUrl;
+            categoryForm.setAttribute("action", data.updateUrl);
             methodSpoof.value = 'PUT';
+
         } else {
             modalTitle.textContent = 'إضافة منتج جديد';
             currentProductId = null;
 
             categoryForm.reset();
-            nameInput.value = '';
-            descInput.value = '';
-            categorySelect.value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('sale_price').value = '';
-            document.getElementById('stock').value = '';
-
             categoryForm.action = "{{ route('products.store') }}";
             methodSpoof.value = '';
+
+            categorySelect.value = '';
+            const priceInputAdd = document.getElementById('price');
+            if (priceInputAdd) priceInputAdd.value = '';
+            // const salePriceInputAdd = document.getElementById('sale_price');
+            // if (salePriceInputAdd) salePriceInputAdd.value = '';
+            // const stockInputAdd = document.getElementById('stock');
+            // if (stockInputAdd) stockInputAdd.value = '';
 
             if (imagePreview) {
                 imagePreview.src = '';
@@ -168,19 +168,7 @@
 </script>
 
 
-<script>
-    $(document).on('click', '.pagination a', function(e) {
-        e.preventDefault();
-        let page = $(this).attr('href').split('page=')[1];
 
-        $.ajax({
-            url: '?page=' + page,
-            success: function(data) {
-                $('#tableData').html(data);
-            }
-        });
-    });
-</script>
 <script>
     (function() {
         const input = document.getElementById('searchByName');
@@ -192,13 +180,12 @@
 
         function runSearch(url) {
             const finalUrl = new URL(url || baseIndex, window.location.origin);
-            // ضمّن قيمة البحث الحالية في الرابط
             const q = (input?.value || '').trim();
             if (q !== '') finalUrl.searchParams.set('q', q);
             else finalUrl.searchParams.delete('q');
 
-            // حالة تحميل بسيطة
             if (input) input.disabled = true;
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</td></tr>';
 
             fetch(finalUrl.toString(), {
                     method: 'GET',
@@ -214,22 +201,31 @@
                     }
                     if (pagerBox && data.pagination !== undefined) {
                         pagerBox.innerHTML = data.pagination;
+                        bindPaginationLinks();
                     }
-                    // حدّث شريط العنوان بدون إعادة تحميل
                     if (window.history && window.history.replaceState) {
                         window.history.replaceState({}, '', finalUrl.toString());
                     }
                 })
                 .catch(() => {
-                    // تقدر تعرض Toast خطأ هنا لو عندك util
-                    console.error('Search failed');
+                    tbody.innerHTML =
+                        '<tr><td colspan="7" class="text-center text-danger">حدث خطأ أثناء التحميل</td></tr>';
                 })
                 .finally(() => {
                     if (input) input.disabled = false;
                 });
         }
 
-        // Debounce on input
+        function bindPaginationLinks() {
+            const links = document.querySelectorAll('#categoriesPagination a.page-link');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    runSearch(this.href);
+                });
+            });
+        }
+
         if (input) {
             input.addEventListener('input', function() {
                 clearTimeout(timer);
@@ -237,15 +233,7 @@
             });
         }
 
-        // AJAX pagination (تفويض أحداث)
-        document.addEventListener('click', function(e) {
-            const a = e.target.closest('#categoriesPagination a');
-            if (!a) return;
-            e.preventDefault();
-            runSearch(a.href);
-        });
-
-
+        bindPaginationLinks();
     })();
 </script>
 

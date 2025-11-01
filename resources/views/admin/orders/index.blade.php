@@ -30,11 +30,10 @@
                 @include('admin.orders._rows', ['orders' => $orders])
             </tbody>
 
-            <div id="categoriesPagination" class="mt-3">
-                {{-- {{ $orders->links() }} --}}
-            </div>
-
         </table>
+        <div id="categoriesPagination" class="mt-3">
+            @include('admin.orders._pagination', ['orders' => $orders])
+        </div>
     </div>
 
 </div>

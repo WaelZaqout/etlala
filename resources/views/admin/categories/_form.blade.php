@@ -61,9 +61,8 @@
                         <label for="description">
                             <i class="fas fa-newspaper me-2"></i>وصف القسم
                         </label>
-                        <input name="description"
-                            class="form-control @error('description') is-invalid @enderror">{{ old('description', isset($category) ? $category->description : '') }}
-                        </input>
+                        <input name="description" id="description"
+                            class="form-control @error('description') is-invalid @enderror" value="{{ old('description', isset($category) ? $category->description : '') }}">
                         @error('description')
                             <div class="text-danger small">{{ $message }}</div>
                         @enderror

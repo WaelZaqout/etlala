@@ -5,37 +5,33 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Services\FrontService;
 use Illuminate\Support\Facades\Auth;
 
 class FrontController extends Controller
 {
+    public function __construct(private FrontService $frontService) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        // منتجات محدودة للعرض في الصفحة الرئيسية
-        $products = Product::latest()->take(10)->get();
-        $wishlistIds = Auth::check() ? Auth::user()->wishlist()->pluck('product_id')->toArray() : [];
 
-        // جلب أول 3 أقسام فقط
-        $categories = Category::take(10)->get();
+        $data = $this->frontService->getHomePageData();
 
-        return view('front.home', compact('products', 'categories', 'wishlistIds'));
+        return view('front.home', $data);
     }
 
     public function new()
     {
-        $products = Product::latest()->get();
-        $categories = Category::all(); // جلب الفئات
+        $data = $this->frontService->getNewProductsPageData();
 
-        return view('front.new', compact('products', 'categories'));
+        return view('front.new', $data);
     }
-    public function details()
+    public function details($id)
     {
-        $product = Product::all();
-        $categories = Category::all(); // جلب الفئات
-
-        return view('front.details', compact('product', 'categories'));
+        $data = $this->frontService->getProductDetailsData($id);
+        return view('front.details', $data);
     }
 }

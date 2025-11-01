@@ -33,11 +33,11 @@
                 @include('admin.categories._rows', ['categories' => $categories])
             </tbody>
 
-            <div id="categoriesPagination" class="mt-3">
-                {{-- {{ $categories->links() }} --}}
-            </div>
-
         </table>
+        <div id="categoriesPagination" class="mt-3">
+            @include('admin.categories._pagination', ['categories' => $categories])
+        </div>
+
     </div>
 
 </div>
@@ -49,17 +49,17 @@
 <script>
     // عناصر المودال والحقول
     const modalOverlay = document.getElementById('modalOverlay');
-    const modalTitle   = document.getElementById('modalTitle');
+    const modalTitle = document.getElementById('modalTitle');
     const categoryForm = document.getElementById('categoryForm');
-    const methodSpoof  = document.getElementById('methodSpoof');
+    const methodSpoof = document.getElementById('methodSpoof');
 
     const openModalBtn = document.querySelector('.add-button');
-    const closeModalBtn= document.getElementById('closeModalBtn');
-    const cancelBtn    = document.getElementById('cancelBtn');
-    const saveBtn      = document.getElementById('saveBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
 
-    const nameInput    = document.getElementById('name');
-    const descInput    = document.getElementById('editor'); // textarea للوصف
+    const nameInput = document.getElementById('name');
+    const descInput = document.getElementById('description'); // input للوصف
     const imagePreview = document.getElementById('imagePreview');
 
     let currentCategoryId = null;
@@ -71,20 +71,15 @@
         if (editMode && data) {
             modalTitle.textContent = 'تعديل القسم';
             currentCategoryId = data.id;
-
             nameInput.value = data.name || '';
 
             // الوصف
-            if (window.CKEDITOR && CKEDITOR.instances.editor) {
-                CKEDITOR.instances.editor.setData(data.description || '');
-            } else {
-                descInput.value = data.description || '';
-            }
-
+        descInput.value = data.description || '';
             // الفورم -> Update
+
+
             categoryForm.action = data.updateUrl;
             methodSpoof.value = 'PUT';
-
             // صورة
             if (imagePreview) {
                 imagePreview.src = data.image ? `/storage/${data.image}` : '';
@@ -96,11 +91,7 @@
 
             categoryForm.reset();
 
-            if (window.CKEDITOR && CKEDITOR.instances.editor) {
-                CKEDITOR.instances.editor.setData('');
-            } else {
-                descInput.value = '';
-            }
+            descInput.value = '';
 
             categoryForm.action = "{{ route('categories.store') }}";
             methodSpoof.value = '';
@@ -134,7 +125,7 @@
         const data = {
             id: btn.dataset.id,
             name: btn.dataset.name,
-            description: btn.dataset.description || '',
+            description: btn.dataset.description,
             image: btn.dataset.image,
             updateUrl: btn.dataset.updateUrl
         };
@@ -153,9 +144,7 @@
     saveBtn.addEventListener('click', (e) => {
         e.preventDefault();
 
-        if (window.CKEDITOR && CKEDITOR.instances.editor) {
-            CKEDITOR.instances.editor.updateElement();
-        }
+        // No CKEditor to update
 
         if (categoryForm.checkValidity()) {
             categoryForm.submit();

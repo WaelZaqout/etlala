@@ -34,8 +34,7 @@
                             class="form-control @error('category_id') is-invalid @enderror" required>
                             <option value="">-- اختر القسم --</option>
                             @foreach ($categories as $category)
-                                <option value="{{ $category->id }}"
-                                    {{ old('category_id', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                                <option value="{{ $category->id }}">
                                     {{ $category->name }}
                                 </option>
                             @endforeach
@@ -79,10 +78,6 @@
                             <div class="text-danger small">{{ $message }}</div>
                         @enderror
                     </div> --}}
-
-
-
-
 
                     <div class="form-group  ">
                         <label class="form-label" for="image">
